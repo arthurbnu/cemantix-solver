@@ -133,11 +133,11 @@ javascript: (async () => {
     </div>
     <form id = "wiki-form">
       <fieldset id="wiki-fieldset">
-        <button type="button" name = "random" class = "small" title = "Page Wikipédia au hasard">?</button>
         <!-- <button type = "button" name = "nextWord" class = "small" title = "Mot suivant">⇒</button> -->
         <button type="button" name = "synonyms" class = "small" title = "Synonymes">Syn</button>
         <input name = "search" id = "my-search" type = "text"> 
         <img src="https://logo.clearbit.com/wikipedia.org" alt="wikipedia logo" width="30" height="30">
+        <button type="button" name = "random" class = "small" title = "Page Wikipédia au hasard">?</button>
         <label for = "maxPages">Pages</label>
         <input name = "maxPages" type="number" min="1" max="50" value="4">
         <label for = "maxWords"> Mots</label>

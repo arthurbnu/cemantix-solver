@@ -1,6 +1,6 @@
 # cemantix-solver
 
-Ce code utilise le principe du [bookmarklet](https://fr.wikipedia.org/wiki/Bookmarklet) 
+Aide à la résolution de cemantix et pedantix basée sur le principe du [bookmarklet](https://fr.wikipedia.org/wiki/Bookmarklet) 
 
 Ajouter le contenu du fichier [bookmarklet.js](https://github.com/arthurbnu/cemantix-solver/blob/main/bookmarklet.js) dans l'URL d'un favori
 

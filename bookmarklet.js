@@ -16,7 +16,7 @@ javascript: (async () => {
 
   /*  submit(allWOrds);   */
   const popup = createPopup(allWOrds);
-  await new Promise((resolve) => setTimeout(resolve, 50));
+  await new Promise((resolve) => setTimeout(resolve, 50));    /* attente pour l'animation */
   popup?.classList.remove("beginning");
 
   addListeners();

@@ -7,10 +7,12 @@ javascript: (async () => {
   const countries = (lang === "fr" ? allCountries.map(c => c.translations.fra.common) : allCountries.map(c => c.name.common));
   console.log('pays :');
   console.log(countries);
+  
+  const fileName = lang === "fr" ? "mots" : "words";
+  const wordsList = await myFetch(`https://raw.githubusercontent.com/arthurbnu/cemantix-solver/refs/heads/main/liste%20initiale/${fileName}.json`);
+  console.log(wordsList);
 
-  const wikiWords = await myFetch('https://raw.githubusercontent.com/words/an-array-of-english-words/main/index.json');
-
-  const allWOrds = words.concat(wikiWords).concat(countries);
+  const allWOrds = wordsList.concat(countries);
 
   /*  submit(allWOrds);   */
   const popup = createPopup(allWOrds);

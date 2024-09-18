@@ -33,7 +33,9 @@ javascript: (async () => {
 
   async function getWikiPage(key) {
     const content = await myFetch(`https://${lang}.wikipedia.org/api/rest_v1/page/html/${key}`, false);
-    return new DOMParser().parseFromString(content, "text/html").body.innerText;
+    const parser = new DOMParser().parseFromString(content, "text/html");
+    parser.querySelectorAll('script, style').forEach(e => e.remove());
+    return parser.body.innerText;
   }
 
   async function getRandomWikiPage() {

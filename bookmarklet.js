@@ -198,6 +198,7 @@ javascript: (async () => {
         transition: opacity,top,transform .5s ease;
         resize: vertical;
         overflow: hidden;
+        max-height: fit-content;
 
         h1{
             color: teal;

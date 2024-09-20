@@ -1,16 +1,30 @@
 javascript: (async () => {
+        
+  var lang = document.documentElement.lang;
+  
+  const synConfig = {
+    "en": {
+      url: "https://www.collinsdictionary.com/us/dictionary/english-thesaurus/",
+      selector: ".headwordSense"
+    },
+    "fr": {
+      url: "https://www.cnrtl.fr/synonymie/",
+      selector: ".syno_format"
+    }
+  };
 
-  const currentGame = document.querySelector('.tab.active').id;   /* fr : cemantix, pedantix | en : cemantle, pedantle */
-  var lang = currentGame.endsWith("ix") ? "fr" : "en";            
+  const synAPI = synConfig[lang];
 
   const allCountries = await myFetch('https://restcountries.com/v3.1/all');
   const countries = (lang === "fr" ? allCountries.map(c => c.translations.fra.common) : allCountries.map(c => c.name.common));
-  console.log('pays :');
-  console.log(countries);
   
+  const gitUrl = "https://raw.githubusercontent.com/arthurbnu/cemantix-solver/refs/heads/main";
   const fileName = lang === "fr" ? "mots" : "words";
-  const wordsList = await myFetch(`https://raw.githubusercontent.com/arthurbnu/cemantix-solver/refs/heads/main/liste%20initiale/${fileName}.json`);
-  console.log(wordsList);
+  const wordsList = await myFetch(`${gitUrl}/liste%20initiale/${fileName}.json`);
+
+  const script = await myFetch(`${gitUrl}/script.js`);
+  document.body.appendChild(document.createElement("script")).textContent = script;
+  /* const style = await myFetch(`${gitUrl}/style.css`); */
 
   const allWOrds = wordsList.concat(countries);
 
@@ -138,9 +152,9 @@ javascript: (async () => {
         <input name = "search" id = "my-search" type = "text"> 
         <img src="https://logo.clearbit.com/wikipedia.org" alt="wikipedia logo" width="30" height="30">
         <button type="button" name = "random" class = "small" title = "Page Wikipédia au hasard">?</button>
-        <label for = "maxPages">Pages</label>
+        <label>Pages</label>
         <input name = "maxPages" type="number" min="1" max="50" value="4">
-        <label for = "maxWords"> Mots</label>
+        <label> Mots</label>
         <input name = "maxWords" type="number" min="100" max="10000" value="150">
         <button name = "descriptions" type="button" title = "Descriptions de pages Wikipédia pour le mot recherché">Descriptions </button>
         <button name = "contents" type="button" title = "Pages Wikipédia pour le mot recherché">Contenus </button>
@@ -148,39 +162,32 @@ javascript: (async () => {
     </form>
     <meter id="p-meter" value="0" min="0" max="100"></meter>
     `;
+
     document.body.appendChild(popup);
     const form = document.querySelector("#wiki-form");
     const textarea = document.querySelector("#pedantix-text");
     textarea.value = words.join("\n");
+
     form.random.onclick = async (e) => {
       const words = await getRandomWikiPage();
       textarea.value = words;
     };
+
     document.querySelector("#pedantix-submit").onclick = async () => {
-      const text = document.querySelector("#pedantix-text").value;
+      const text = textarea.value;
       const words = text.replace(/[^a-zA-ZÀ-ÿ0-9]/g, " ").split(/\s+/).filter((w) => w.trim() !== "");
       const meter = document.querySelector("#p-meter");
       const { score, resultString } = await submit(words, meter);
-      document.querySelector("#pedantix-text").value = resultString;
+      textarea.value = resultString;
     };
+
     document.querySelectorAll("#close-popup, #close-popup-inner")
       .forEach(el => el.onclick = () => popup.remove());
 
     document.querySelector("#pedantix-stop").onclick = () => document.body.dataset.stop = true;
 
     form.synonyms.onclick = async () => {
-      let url, selector;
-      switch (lang) {
-        case "en":
-          url = "https://www.collinsdictionary.com/us/dictionary/english-thesaurus/";
-          selector = ".headwordSense";
-          break;
-        case "fr":
-          url = "https://www.cnrtl.fr/synonymie/";
-          selector = ".syno_format";
-          break;
-      }
-      textarea.value = await getFetchArray(url + form.search.value, selector);
+      textarea.value = await getFetchArray(synAPI.url + form.search.value, synAPI.selector);
     };
 
     handleWikiFieldset(textarea);

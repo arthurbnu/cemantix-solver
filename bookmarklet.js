@@ -1,6 +1,6 @@
 javascript: (async () => {
         
-  var lang = document.documentElement.lang;
+  const lang = document.documentElement.lang;
   
   /* synonymes */
   const synConfig = {

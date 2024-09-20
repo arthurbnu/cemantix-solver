@@ -143,7 +143,6 @@ javascript: (async () => {
     </div>
     <form id = "wiki-form">
       <fieldset id="wiki-fieldset">
-        <!-- <button type = "button" name = "nextWord" class = "small" title = "Mot suivant">⇒</button> -->
         <button type="button" name = "synonyms" class = "small" title = "Synonymes">Syn</button>
         <input name = "search" id = "my-search" type = "text"> 
         <img src="https://logo.clearbit.com/wikipedia.org" alt="wikipedia logo" width="30" height="30">
@@ -162,60 +161,39 @@ javascript: (async () => {
     document.body.appendChild(popup);
     const form = document.querySelector("#wiki-form");
     const textarea = document.querySelector("#pedantix-text");
-    textarea.value = words.join("\n");
+    const setText = text => textarea.value = text;
+    setText(words.join("\n"));
 
-    form.random.onclick = async (e) => {
-      const words = await getRandomWikiPage();
-      textarea.value = words;
-    };
+    form.random.onclick = async () => setText(await getRandomWikiPage());
 
     document.querySelector("#pedantix-submit").onclick = async () => {
       const text = textarea.value;
       const words = text.replace(/[^a-zA-ZÀ-ÿ0-9]/g, " ").split(/\s+/).filter((w) => w.trim() !== "");
       const meter = document.querySelector("#p-meter");
       const { score, resultString } = await submit(words, meter);
-      textarea.value = resultString;
+      setText(resultString);
     };
 
-    document.querySelectorAll("#close-popup, #close-popup-inner")
-      .forEach(el => el.onclick = () => popup.remove());
+    document.querySelector("#close-popup").onclick = () => popup.remove();
 
     document.querySelector("#pedantix-stop").onclick = () => document.body.dataset.stop = true;
 
-    form.synonyms.onclick = async () => {
-      textarea.value = await getFetchArray(synAPI.url + form.search.value, synAPI.selector);
-    };
+    form.synonyms.onclick = async () => setText(await getFetchArray(synAPI.url + form.search.value, synAPI.selector));
 
     handleWikiFieldset(textarea);
-
-    /*
-    form.nextWord.onclick = () => {
-      const bestGuesses = document.querySelectorAll(".word.close");
-      const bestGuessesText = Array.from(bestGuesses).map((el) => el.innerText);
-      const nbWords = bestGuessesText.length;
-      if (nbWords === 0) return;
-      const currentIndex = form.search.value ? bestGuessesText.indexOf(form.search.value) : -1;
-      form.search.value = bestGuessesText[(currentIndex + 1) % nbWords];
-    };
-    */
 
     const style = document.createElement("style");
     document.head.appendChild(style);
     style.id = "pedantix-popup-style";
     style.innerHTML = `
     #pedantix-popup {
-        width: 650px;
         position: fixed;
         z-index: 9999;
-        /*
-        top: 25vh;
-        right: calc(50vw - 300px); 
-        */
-       top: 3vh;
-       right: 5vw;
-        background-color: white;
+        width: 650px;
+        top: 3vh;
+        right: 5vw;
+        background-color: #ffffffbf;
         padding: 10px;
-        border: 1px solid black;
         border-radius: 5px;
         box-shadow: 0 0 10px rgba(0,0,0,0.5);
         transition: all .5s ease;
@@ -223,13 +201,12 @@ javascript: (async () => {
         h1{
             color: teal;
             margin: 0 auto;
-            background: aliceblue;
         }
 
         textarea{
             width: 70%;
             height: 135px;
-            margin-top: 10px;
+            margin-top: 5px;
             border: 1px solid teal;
             border-radius: 5px;
             padding: 5px;
@@ -273,11 +250,12 @@ javascript: (async () => {
           display: flex;
           position: relative;
           height: 25px;
+          padding-top: 8px;
           place-content: space-between;
           align-items: center;
           color: black;
           border: none;
-          background: #f0f0f0;
+          background: linear-gradient(to top, #0096881a 0%, #ffffff3b 100%);
 
           select{
             position: absolute;

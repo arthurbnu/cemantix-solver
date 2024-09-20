@@ -2,6 +2,7 @@ javascript: (async () => {
         
   var lang = document.documentElement.lang;
   
+  /* synonymes */
   const synConfig = {
     "en": {
       url: "https://www.collinsdictionary.com/us/dictionary/english-thesaurus/",
@@ -12,23 +13,22 @@ javascript: (async () => {
       selector: ".syno_format"
     }
   };
-
   const synAPI = synConfig[lang];
 
-  const allCountries = await myFetch('https://restcountries.com/v3.1/all');
-  const countries = (lang === "fr" ? allCountries.map(c => c.translations.fra.common) : allCountries.map(c => c.name.common));
-  
+  /* liste initiale (mots fréquents + pays) */
   const gitUrl = "https://raw.githubusercontent.com/arthurbnu/cemantix-solver/refs/heads/main";
   const fileName = lang === "fr" ? "mots" : "words";
   const wordsList = await myFetch(`${gitUrl}/liste%20initiale/${fileName}.json`);
 
-  const script = await myFetch(`${gitUrl}/script.js`);
+  const allCountries = await myFetch('https://restcountries.com/v3.1/all');
+  const countries = (lang === "fr" ? allCountries.map(c => c.translations.fra.common) : allCountries.map(c => c.name.common));
+
+  const script = await myFetch(`${gitUrl}/script.js`, false);
   document.body.appendChild(document.createElement("script")).textContent = script;
   /* const style = await myFetch(`${gitUrl}/style.css`); */
 
   const allWOrds = wordsList.concat(countries);
 
-  /*  submit(allWOrds);   */
   const popup = createPopup(allWOrds);
   await new Promise((resolve) => setTimeout(resolve, 50));    /* attente pour l'animation */
   popup?.classList.remove("beginning");

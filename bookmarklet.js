@@ -27,11 +27,7 @@ javascript: (async () => {
   document.body.appendChild(document.createElement("script")).textContent = script;
   /* const style = await myFetch(`${gitUrl}/style.css`); */
 
-  const allWOrds = wordsList.concat(countries);
-
-  const popup = createPopup(allWOrds);
-  await new Promise((resolve) => setTimeout(resolve, 50));    /* attente pour l'animation */
-  popup?.classList.remove("beginning");
+  createPopup([...wordsList, ...countries]);
 
   addListeners();
 
@@ -118,7 +114,7 @@ javascript: (async () => {
   /*  Remplit l'input au clic sur un des mots de l'article (pedantix) ou un des mots déjà tentés (cemantix) */
   function addListeners() {
     document.querySelectorAll('#cemantix-guesses, #cemantle-guesses, #article').forEach(el => el.addEventListener('click', e => {
-      document.querySelector('#my-search').value = e.target.innerText;
+      document.querySelector('#my-search').value = e.target.innerText.trim();
     }));
   }
 
@@ -349,7 +345,7 @@ javascript: (async () => {
   }
  `;
 
-    return popup;
+  setTimeout(() => popup.classList.remove("beginning"), 50);  /* pour l'animation */
 
   }
 

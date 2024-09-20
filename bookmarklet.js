@@ -25,7 +25,6 @@ javascript: (async () => {
 
   const script = await myFetch(`${gitUrl}/script.js`, false);
   document.body.appendChild(document.createElement("script")).textContent = script;
-  /* const style = await myFetch(`${gitUrl}/style.css`); */
 
   createPopup([...wordsList, ...countries]);
 

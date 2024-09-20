@@ -21,7 +21,7 @@ javascript: (async () => {
   const wordsList = await myFetch(`${gitUrl}/liste%20initiale/${fileName}.json`);
 
   const allCountries = await myFetch('https://restcountries.com/v3.1/all');
-  const countries = (lang === "fr" ? allCountries.map(c => c.translations.fra.common) : allCountries.map(c => c.name.common));
+  const countries = (lang === "fr") ? allCountries.map(c => c.translations.fra.common) : allCountries.map(c => c.name.common);
 
   const script = await myFetch(`${gitUrl}/script.js`, false);
   document.body.appendChild(document.createElement("script")).textContent = script;
@@ -133,6 +133,7 @@ javascript: (async () => {
     popup.classList.add("beginning");
 
     popup.innerHTML = `
+    <meter id="p-meter" value="0" min="0" max="100"></meter>
     <h1>🤑 HELPER 🤑</h1>
     <button id = "close-popup">X</button>
     <textarea id="pedantix-text" rows="10"></textarea>
@@ -154,7 +155,6 @@ javascript: (async () => {
         <button name = "contents" type="button" title = "Pages Wikipédia pour le mot recherché">Contenus </button>
       </fieldset>
     </form>
-    <meter id="p-meter" value="0" min="0" max="100"></meter>
     `;
 
     document.body.appendChild(popup);
@@ -195,7 +195,9 @@ javascript: (async () => {
         padding: 10px;
         border-radius: 5px;
         box-shadow: 0 0 10px rgba(0,0,0,0.5);
-        transition: all .5s ease;
+        transition: opacity,top,transform .5s ease;
+        resize: vertical;
+        overflow: hidden;
 
         h1{
             color: teal;
@@ -320,6 +322,14 @@ javascript: (async () => {
   body:has(td.word.close:active) #my-search{
     scale: 1.2;
   }
+
+  #pedantix-popup:has(#pedantix-submit:hover) textarea,
+  #pedantix-popup:has([name=synonyms]:hover) #my-search,
+  #pedantix-popup:has([name=descriptions]:hover) #my-search,
+  #pedantix-popup:has([name=contents]:hover) #my-search{
+    text-shadow: 0 0 5px #ffee10;
+  }
+
  `;
 
   setTimeout(() => popup.classList.remove("beginning"), 50);  /* pour l'animation */

@@ -30,9 +30,9 @@ javascript: (async () => {
 
   addListeners();
 
-  /*fonctions */
+  /* fonctions */
 
-  function mySelector(arr) {
+  function mySelector(...arr) {
     return arr.map(selector => document.querySelector(selector));
   }
 
@@ -58,23 +58,20 @@ javascript: (async () => {
     return await myFetch(`https://${lang}.wikipedia.org/w/rest.php/v1/search/title?q=${word}&limit=${limit}`);
   }
 
-
   function handleWikiFieldset(textArea) {
     const form = document.querySelector("#wiki-form");
-    const input = form.search;
-    const descButton = form.descriptions;
-    const contButton = form.contents;
+    const [input, btnDesc, btnCont] = [form.search, form.descriptions, form.contents];
 
-    descButton.onclick = async () => {
-      descButton.disabled = true;
+    btnDesc.onclick = async () => {
+      btnDesc.disabled = true;
       const jsonResult = await getWikiSuggestions(input.value, form.maxPages.value);
       const wordsList = jsonResult.pages.map((page) => page.description);
       textArea.value = wordsList.join("\n");
-      descButton.disabled = false;
+      btnDesc.disabled = false;
     };
 
-    contButton.onclick = async () => {
-      contButton.disabled = true;
+    btnCont.onclick = async () => {
+      btnCont.disabled = true;
       const jsonResult = await getWikiSuggestions(input.value, form.maxPages.value);
       const keys = jsonResult.pages.map((page) => page.key);
       let wordsList = "";
@@ -83,14 +80,14 @@ javascript: (async () => {
         wordsList += textContent.substring(0, form.maxWords.value * 5);
       }
       textArea.value = wordsList;
-      contButton.disabled = false;
+      btnCont.disabled = false;
     }
   }
 
   /* soumet tous les mots de la textarea et affiche le résultat pour chaque mot */
   async function submit() {
     const currentGame = document.querySelector('.tab.active').id;   /* cemantix | cemantle ou pedantix | pedantle */
-    const [textarea, meter, guessInput, guessButton, error] = mySelector(["#pedantix-text", "#p-meter", `#${currentGame}-guess`, `#${currentGame}-guess-btn`, `#${currentGame}-error`]);
+    const [textarea, meter, guessInput, guessButton, error] = mySelector("#pedantix-text", "#p-meter", `#${currentGame}-guess`, `#${currentGame}-guess-btn`, `#${currentGame}-error`);
     const wordsList = textarea.value.replace(/[^a-zA-ZÀ-ÿ0-9]/g, " ").split(/\s+/).filter((w) => w.trim() !== "");
 
     document.body.dataset.stop = false;
@@ -110,13 +107,13 @@ javascript: (async () => {
     }
 
     /* cemantix | cemantle : résultat déterminé à la fin */
-    if (currentGame.startsWith('cemant')){    
-      const wordsNode = document.querySelectorAll('.word.close');
-      for (node of wordsNode) {
+    if (currentGame.startsWith('cemant')){
+      const wordNodes = document.querySelectorAll('.word.close');
+      for (node of wordNodes) {
         if (wordsList.includes(node.innerText)) {
           node.classList.add('animating');
-          const score = node.nextElementSibling.innerText;    /* score dans l'elt suivant */
-          resultString += `${node.innerText} : ${score}\n`;
+          const emoji = node.nextElementSibling.nextElementSibling.innerText;
+          resultString += `${node.innerText} : ${emoji}\n`;
 
           setTimeout(() => {
             for (animatingNode of document.querySelectorAll('.word.animating'))
@@ -126,13 +123,28 @@ javascript: (async () => {
       }
     }
     textarea.value = resultString;
+
+    if (document.querySelector(`#${currentGame}-success`).style.display !== 'none'){
+      textarea.value = '';
+      textarea.classList.add('p-success');
+      const drawMessage = document.querySelector(`#success-draw`).innerText;
+      let i = 0;
+      const draw = () => {
+        if (i < drawMessage.length) {
+          textarea.value += drawMessage[i];
+          i++;
+          setTimeout(draw, 10);
+        }
+      };
+      draw();
+    }
   }
 
 
   /* Remplit l'input au clic sur un des mots de l'article (pedantix) ou un des mots déjà tentés (cemantix) */
-  /* Soumet la recherche de synonymes au double clic */
+  /* Soumet la recherche de synonymes au double clic ou clic droit */
   function addListeners() {
-    const [searchInput, synButton] = mySelector(["#my-search", '[title="Synonymes"]']);
+    const [searchInput, synButton] = mySelector("#my-search", '[title="Synonymes"]');
     const wordsZoneSelector = "#cemantix-guesses, #cemantix-guessed, #cemantle-guesses, #cemantle-guessed, #article";
     const clickOnSynButton = e => synButton.click();
     const fillSearch = e => {
@@ -141,10 +153,10 @@ javascript: (async () => {
       if (isNaN(textClicked))
         searchInput.value = textClicked;
     };
-    document.querySelectorAll(wordsZoneSelector).forEach(el => {
-      el.addEventListener('click', fillSearch);
-      el.addEventListener('dblclick', clickOnSynButton);
-      el.addEventListener('contextmenu', e => { fillSearch(e); clickOnSynButton(e); });
+    document.querySelectorAll(wordsZoneSelector).forEach(zone => {
+      zone.addEventListener('click', fillSearch);
+      zone.addEventListener('dblclick', clickOnSynButton);
+      zone.addEventListener('contextmenu', e => { fillSearch(e); clickOnSynButton(e); });
     });
   }
 
@@ -166,6 +178,24 @@ javascript: (async () => {
     popup.innerHTML = `
     <meter id="p-meter" value="0" min="0" max="100"></meter>
     <h1>🤑 HELPER 🤑</h1>
+    <pre id = "success-draw" style = "display: none">
+           \n       
+         xx xxxxxx x x xx\n     
+    xxx                      xx \n  
+xx         xxxxx    xxxxx      x \n  
+x          x   x   xx   xx      x\n  
+x          xxxxx    xxxxxx       x\n  
+x                                  x\n 
+x              xxxxx               xx\n
+ x             xxxxx       x       x\n
+ x       xx               xx      x\n
+  x       xxx           xx      xx \n
+  xx        xxxxxx xxxxxx     xxx \n 
+    xx            xx       xxx \n   
+     xxx                xxx \n      
+        xxx          xxx \n         
+           x x xxxxx\n   
+    </pre>
     <button id = "close-popup">X</button>
     <textarea id="pedantix-text" rows="10"></textarea>
     <div id = p-buttons>
@@ -189,7 +219,7 @@ javascript: (async () => {
     `;
 
     document.body.appendChild(popup);
-    const [form, textarea, btnSubmit, btnClose, btnStop] = mySelector(["#wiki-form", "#pedantix-text", "#pedantix-submit", "#close-popup", "#pedantix-stop"]);
+    const [form, textarea, btnSubmit, btnClose, btnStop] = mySelector("#wiki-form", "#pedantix-text", "#pedantix-submit", "#close-popup", "#pedantix-stop");
     const setText = text => textarea.value = text;
     setText(words.join("\n"));
 
@@ -236,6 +266,11 @@ javascript: (async () => {
             border: 1px solid teal;
             border-radius: 5px;
             padding: 5px;
+            transition: height 4s;
+        }
+
+        textarea.p-success{
+          height: 300px;
         }
 
         #close-popup{

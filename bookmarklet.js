@@ -30,9 +30,11 @@ javascript: (async () => {
 
   addListeners();
 
-  const error = document.querySelector("#pedantix-error, #pedantle-error");   /* to fix */
-
   /*fonctions */
+
+  function mySelector(arr) {
+    return arr.map(selector => document.querySelector(selector));
+  }
 
   async function myFetch(url, json = true) {
     return await fetch(url)
@@ -53,8 +55,7 @@ javascript: (async () => {
   }
 
   async function getWikiSuggestions(word, limit = 10) {
-    const res = await myFetch(`https://${lang}.wikipedia.org/w/rest.php/v1/search/title?q=${word}&limit=${limit}`);
-    return res;
+    return await myFetch(`https://${lang}.wikipedia.org/w/rest.php/v1/search/title?q=${word}&limit=${limit}`);
   }
 
 
@@ -86,35 +87,65 @@ javascript: (async () => {
     }
   }
 
-  async function submit(wordsList, meter) {
-    const currentGame = document.querySelector('.tab.active').id;   /* cemantix ou pedantix */
-    const input = document.querySelector(`#${currentGame}-guess`);
-    const button = document.querySelector(`#${currentGame}-guess-btn`);
+  /* soumet tous les mots de la textarea et affiche le résultat pour chaque mot */
+  async function submit() {
+    const currentGame = document.querySelector('.tab.active').id;   /* cemantix | cemantle ou pedantix | pedantle */
+    const [textarea, meter, guessInput, guessButton, error] = mySelector(["#pedantix-text", "#p-meter", `#${currentGame}-guess`, `#${currentGame}-guess-btn`, `#${currentGame}-error`]);
+    const wordsList = textarea.value.replace(/[^a-zA-ZÀ-ÿ0-9]/g, " ").split(/\s+/).filter((w) => w.trim() !== "");
 
     document.body.dataset.stop = false;
     meter.value = 0;
-    let score = 0;
     let resultString = '';
     for (const word of wordsList) {
       if (document.body.dataset.stop === "true") break;
-      input.value = word;
+      guessInput.value = word;
       /* attend remise à z de l'input pour être sûr que le mot est bien pris en compte */
-      while (input.value !== '') {
-        button.click();
-        await new Promise((resolve) => setTimeout(resolve, 20));
+      while (guessInput.value !== '') {
+        guessButton.click();
+        await new Promise(resolve => setTimeout(resolve, 20));
       }
       meter.value += 100 / wordsList.length;
-      score += error.innerText.includes("🟩") ? 1 : 0;
-      resultString += `${word} : ${error.innerText}\n`;
+      if (currentGame.startsWith('pedant'))    /* pedantix | pedantle : résultat au fur et à m */
+        resultString += `${word} : ${error.innerText}\n`;
     }
-    return { score, resultString };
-  };
 
-  /*  Remplit l'input au clic sur un des mots de l'article (pedantix) ou un des mots déjà tentés (cemantix) */
+    /* cemantix | cemantle : résultat déterminé à la fin */
+    if (currentGame.startsWith('cemant')){    
+      const wordsNode = document.querySelectorAll('.word.close');
+      for (node of wordsNode) {
+        if (wordsList.includes(node.innerText)) {
+          node.classList.add('animating');
+          const score = node.nextElementSibling.innerText;    /* score dans l'elt suivant */
+          resultString += `${node.innerText} : ${score}\n`;
+
+          setTimeout(() => {
+            for (animatingNode of document.querySelectorAll('.word.animating'))
+              animatingNode.classList.remove('animating')}
+          , 1800);
+        }
+      }
+    }
+    textarea.value = resultString;
+  }
+
+
+  /* Remplit l'input au clic sur un des mots de l'article (pedantix) ou un des mots déjà tentés (cemantix) */
+  /* Soumet la recherche de synonymes au double clic */
   function addListeners() {
-    document.querySelectorAll('#cemantix-guesses, #cemantle-guesses, #article').forEach(el => el.addEventListener('click', e => {
-      document.querySelector('#my-search').value = e.target.innerText.trim();
-    }));
+    const [searchInput, synButton] = mySelector(["#my-search", '[title="Synonymes"]']);
+    const wordsZoneSelector = "#cemantix-guesses, #cemantix-guessed, #cemantle-guesses, #cemantle-guessed, #article";
+    const clickOnSynButton = e => synButton.click();
+    const fillSearch = e => {
+      e.preventDefault();
+      textClicked = e.target.innerText.trim();
+      if (isNaN(textClicked))
+        searchInput.value = textClicked;
+    };
+    document.querySelectorAll(wordsZoneSelector).forEach(el => {
+      el.addEventListener('click', fillSearch);
+      el.addEventListener('dblclick', clickOnSynButton);
+      el.addEventListener('contextmenu', e => { fillSearch(e); clickOnSynButton(e); });
+    });
   }
 
   async function getFetchArray(url, selector){
@@ -158,26 +189,19 @@ javascript: (async () => {
     `;
 
     document.body.appendChild(popup);
-    const form = document.querySelector("#wiki-form");
-    const textarea = document.querySelector("#pedantix-text");
+    const [form, textarea, btnSubmit, btnClose, btnStop] = mySelector(["#wiki-form", "#pedantix-text", "#pedantix-submit", "#close-popup", "#pedantix-stop"]);
     const setText = text => textarea.value = text;
     setText(words.join("\n"));
 
     form.random.onclick = async () => setText(await getRandomWikiPage());
+    btnSubmit.onclick = submit;
+    btnClose.onclick = () => popup.remove();
+    btnStop.onclick = () => document.body.dataset.stop = true;
 
-    document.querySelector("#pedantix-submit").onclick = async () => {
-      const text = textarea.value;
-      const words = text.replace(/[^a-zA-ZÀ-ÿ0-9]/g, " ").split(/\s+/).filter((w) => w.trim() !== "");
-      const meter = document.querySelector("#p-meter");
-      const { score, resultString } = await submit(words, meter);
-      setText(resultString);
+    form.synonyms.onclick = async () => {
+      setText(await getFetchArray(synAPI.url + form.search.value, synAPI.selector));
+      submit();
     };
-
-    document.querySelector("#close-popup").onclick = () => popup.remove();
-
-    document.querySelector("#pedantix-stop").onclick = () => document.body.dataset.stop = true;
-
-    form.synonyms.onclick = async () => setText(await getFetchArray(synAPI.url + form.search.value, synAPI.selector));
 
     handleWikiFieldset(textarea);
 
@@ -317,6 +341,18 @@ javascript: (async () => {
   .word.close:hover, article .w:hover{
     scale: 1.2;
     outline: 1px solid #e96ac6;
+  }
+  .word.close.animating{
+    animation: highlight 1s infinite
+  }
+
+  @keyframes highlight {
+    0% {
+      background-color: violet;
+    }
+    100% {
+      background-color: transparent;
+    }
   }
 
   body:has(article .w:active) #my-search,

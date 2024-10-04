@@ -133,7 +133,7 @@ javascript: (async () => {
         if (i < drawMessage.length) {
           textarea.value += drawMessage[i];
           i++;
-          setTimeout(draw, 10);
+          setTimeout(draw, 7);
         }
       };
       draw();
@@ -270,7 +270,7 @@ x              xxxxx               xx\n
         }
 
         textarea.p-success{
-          height: 300px;
+          height: 260px;
         }
 
         #close-popup{

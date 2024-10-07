@@ -87,7 +87,8 @@ javascript: (async () => {
   /* soumet tous les mots de la textarea et affiche le résultat pour chaque mot */
   async function submit() {
     const currentGame = document.querySelector('.tab.active').id;   /* cemantix | cemantle ou pedantix | pedantle */
-    const [textarea, meter, guessInput, guessButton, error] = mySelector("#pedantix-text", "#p-meter", `#${currentGame}-guess`, `#${currentGame}-guess-btn`, `#${currentGame}-error`);
+    const [textarea, meter, guessInput, guessButton, error, drawNode] = 
+      mySelector("#pedantix-text", "#p-meter", `#${currentGame}-guess`, `#${currentGame}-guess-btn`, `#${currentGame}-error`, "#success-draw");
     const wordsList = textarea.value.replace(/[^a-zA-ZÀ-ÿ0-9]/g, " ").split(/\s+/).filter((w) => w.trim() !== "");
 
     document.body.dataset.stop = false;
@@ -97,9 +98,11 @@ javascript: (async () => {
       if (document.body.dataset.stop === "true") break;
       guessInput.value = word;
       /* attend remise à z de l'input pour être sûr que le mot est bien pris en compte */
-      while (guessInput.value !== '') {
+      let tries = 0;
+      while (guessInput.value !== '' && tries < 10) {
         guessButton.click();
         await new Promise(resolve => setTimeout(resolve, 20));
+        tries++;
       }
       meter.value += 100 / wordsList.length;
       if (currentGame.startsWith('pedant'))    /* pedantix | pedantle : résultat au fur et à m */
@@ -124,22 +127,19 @@ javascript: (async () => {
     }
     textarea.value = resultString;
 
-    if (document.querySelector(`#${currentGame}-success`).style.display !== 'none'){
-      textarea.value = '';
-      textarea.classList.add('p-success');
-      const drawMessage = document.querySelector(`#success-draw`).innerText;
-      let i = 0;
-      const draw = () => {
-        if (i < drawMessage.length) {
-          textarea.value += drawMessage[i];
-          i++;
-          setTimeout(draw, 7);
-        }
-      };
-      draw();
-    }
+    const gameWon = document.querySelector(`#${currentGame}-success`).style.display === 'block';
+    
+    if (gameWon)
+      draw(textarea, drawNode.innerText);
+    
+    textarea.classList.toggle('p-success', gameWon);
   }
 
+  function draw(textarea, drawContent){
+    textarea.value = '';
+    for (let i = 0; i < drawContent.length; i++)
+      setTimeout(() => textarea.value += drawContent[i], i * 7);
+  }
 
   /* Remplit l'input au clic sur un des mots de l'article (pedantix) ou un des mots déjà tentés (cemantix) */
   /* Soumet la recherche de synonymes au double clic ou clic droit */

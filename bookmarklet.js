@@ -179,22 +179,7 @@ javascript: (async () => {
     <meter id="p-meter" value="0" min="0" max="100"></meter>
     <h1>🤑 HELPER 🤑</h1>
     <pre id = "success-draw" style = "display: none">
-           \n       
-         xx xxxxxx x x xx\n     
-    xxx                      xx \n  
-xx         xxxxx    xxxxx      x \n  
-x          x   x   xx   xx      x\n  
-x          xxxxx    xxxxxx       x\n  
-x                                  x\n 
-x              xxxxx               xx\n
- x             xxxxx       x       x\n
- x       xx               xx      x\n
-  x       xxx           xx      xx \n
-  xx        xxxxxx xxxxxx     xxx \n 
-    xx            xx       xxx \n   
-     xxx                xxx \n      
-        xxx          xxx \n         
-           x x xxxxx\n   
+           \n                xx xxxxxx x x xx\n      xxx                      xx \n  xx         xxxxx    xxxxx      x \n  x          x   x   xx   xx      x\n  x          xxxxx    xxxxxx       x\n  x                                  x\n x              xxxxx               xx\n x             xxxxx       x       x\n x       xx               xx      x\n  x       xxx           xx      xx \n  xx        xxxxxx xxxxxx     xxx \n     xx            xx       xxx \n        xxx                xxx \n              xxx          xxx \n                 x x xxxxx\n   
     </pre>
     <button id = "close-popup">X</button>
     <textarea id="pedantix-text" rows="10"></textarea>

@@ -1,19 +1,30 @@
 javascript: (async () => {
-        
+
   const lang = document.documentElement.lang;
-  
+
   /* synonymes */
   const synConfig = {
-    "en": {
+    en: {
       url: "https://www.collinsdictionary.com/us/dictionary/english-thesaurus/",
       selector: ".headwordSense"
     },
-    "fr": {
+    fr: {
       url: "https://www.cnrtl.fr/synonymie/",
       selector: ".syno_format"
     }
   };
-  const synAPI = synConfig[lang];
+  /* mots sémantiquement proches */
+const semanticallyCloseconfig = {
+    en: {
+      url: "https://corsproxy.io/?https://relatedwords.org/relatedto/",
+      selector: ".words li"
+    },
+    fr: {
+      url : "https://corsproxy.io/?https://www.autourdumot.fr/champ-lexical/",
+      selector : "#res li"
+    }
+  };
+  const [synAPI, semanticallyCloseAPI] = [synConfig[lang], semanticallyCloseconfig[lang]];
 
   /* liste initiale (mots fréquents + pays) */
   const gitUrl = "https://raw.githubusercontent.com/arthurbnu/cemantix-solver/refs/heads/main";
@@ -87,7 +98,7 @@ javascript: (async () => {
   /* soumet tous les mots de la textarea et affiche le résultat pour chaque mot */
   async function submit() {
     const currentGame = document.querySelector('.tab.active').id;   /* cemantix | cemantle ou pedantix | pedantle */
-    const [textarea, meter, guessInput, guessButton, error, drawNode] = 
+    const [textarea, meter, guessInput, guessButton, error, drawNode] =
       mySelector("#pedantix-text", "#p-meter", `#${currentGame}-guess`, `#${currentGame}-guess-btn`, `#${currentGame}-error`, "#success-draw");
     const wordsList = textarea.value.replace(/[^a-zA-ZÀ-ÿ0-9]/g, " ").split(/\s+/).filter((w) => w.trim() !== "");
 
@@ -110,7 +121,7 @@ javascript: (async () => {
     }
 
     /* cemantix | cemantle : résultat déterminé à la fin */
-    if (currentGame.startsWith('cemant')){
+    if (currentGame.startsWith('cemant')) {
       const wordNodes = document.querySelectorAll('.word.close');
       for (node of wordNodes) {
         if (wordsList.includes(node.innerText)) {
@@ -120,22 +131,23 @@ javascript: (async () => {
 
           setTimeout(() => {
             for (animatingNode of document.querySelectorAll('.word.animating'))
-              animatingNode.classList.remove('animating')}
-          , 1800);
+              animatingNode.classList.remove('animating')
+          }
+            , 1800);
         }
       }
     }
     textarea.value = resultString;
 
     const gameWon = document.querySelector(`#${currentGame}-success`).style.display === 'block';
-    
+
     if (gameWon)
       draw(textarea, drawNode.innerText);
-    
+
     textarea.classList.toggle('p-success', gameWon);
   }
 
-  function draw(textarea, drawContent){
+  function draw(textarea, drawContent) {
     textarea.value = '';
     for (let i = 0; i < drawContent.length; i++)
       setTimeout(() => textarea.value += drawContent[i], i * 7);
@@ -160,18 +172,18 @@ javascript: (async () => {
     });
   }
 
-  async function getFetchArray(url, selector){
+  async function getFetchArray(url, selector, max = 20) {
     const res = await myFetch(url, false);
     const nodes = new DOMParser().parseFromString(res, "text/html").body.querySelectorAll(selector);
-    return Array.from(nodes).map(node => node.innerText).join("\n");
+    const arr = Array.from(nodes).map(node => node.innerText).slice(0, max);
+    return arr.join("\n");
   }
 
   function createPopup(words) {
     const popup = document.querySelector("#pedantix-popup") ?? document.createElement("div");
-    if (popup.id) {
-      popup.style.display = "block";
-      return;
-    }
+    if (popup.id)
+      return alert("Script déjà appelé.. Réactualiser la page pour éviter les confits.");
+
     popup.id = "pedantix-popup";
     popup.classList.add("beginning");
 
@@ -214,7 +226,9 @@ javascript: (async () => {
     btnStop.onclick = () => document.body.dataset.stop = true;
 
     form.synonyms.onclick = async () => {
-      setText(await getFetchArray(synAPI.url + form.search.value, synAPI.selector));
+      const synonyms = await getFetchArray(synAPI.url + form.search.value, synAPI.selector);
+      const semanticallyClose = await getFetchArray(semanticallyCloseAPI.url + form.search.value, semanticallyCloseAPI.selector);
+      setText(synonyms + semanticallyClose);
       submit();
     };
 
@@ -389,7 +403,7 @@ javascript: (async () => {
 
  `;
 
-  setTimeout(() => popup.classList.remove("beginning"), 50);  /* pour l'animation */
+    setTimeout(() => popup.classList.remove("beginning"), 50);  /* pour l'animation */
 
   }
 

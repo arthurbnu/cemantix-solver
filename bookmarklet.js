@@ -172,7 +172,7 @@ const semanticallyCloseconfig = {
     });
   }
 
-  async function getFetchArray(url, selector, max = 20) {
+  async function getFetchArray(url, selector, max = 50) {
     const res = await myFetch(url, false);
     const nodes = new DOMParser().parseFromString(res, "text/html").body.querySelectorAll(selector);
     const arr = Array.from(nodes).map(node => node.innerText).slice(0, max);

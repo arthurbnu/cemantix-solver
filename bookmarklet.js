@@ -99,7 +99,7 @@ const semanticallyCloseconfig = {
   async function submit() {
     const currentGame = document.querySelector('.tab.active').id;   /* cemantix | cemantle ou pedantix | pedantle */
     const [textarea, meter, guessInput, guessButton, error, drawNode] =
-      mySelector("#pedantix-text", "#p-meter", `#guess`, `#guess-btn`, `#${currentGame}-error`, "#success-draw");
+      mySelector("#pedantix-text", "#p-meter", `#guess`, `#guess-btn`, `#error`, "#success-draw");
     const wordsList = textarea.value.replace(/[^a-zA-ZÀ-ÿ0-9]/g, " ").split(/\s+/).filter((w) => w.trim() !== "");
 
     document.body.dataset.stop = false;
